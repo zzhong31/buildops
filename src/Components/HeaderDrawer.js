@@ -10,6 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import AccessibilityIcon from '@material-ui/icons/Accessibility';
+import HomeIcon from '@material-ui/icons/Home';
 
 const useStyles = makeStyles({
   list: {
@@ -40,6 +41,19 @@ export default function TemporaryDrawer() {
     setState({ ...state, [anchor]: open });
   };
 
+  const onClickNav = (e, href) => {
+    console.log('nav event');
+    if (e.metaKey || e.ctrlKey) {
+      return;
+    }
+
+    e.preventDefault();
+    window.history.pushState({}, '', href);
+
+    const navEvent = new PopStateEvent('popstate');
+    window.dispatchEvent(navEvent);
+  };
+
   const list = (anchor) => (
     <div
       className={clsx(classes.list, {
@@ -50,13 +64,19 @@ export default function TemporaryDrawer() {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        <ListItem button>
+        <ListItem button onClick={(e) => onClickNav(e, '/')}>
+          <ListItemIcon>
+            <HomeIcon />
+          </ListItemIcon>
+          <ListItemText primary="Home" />
+        </ListItem>
+        <ListItem button onClick={(e) => onClickNav(e, '/employees')}>
           <ListItemIcon>
             <AccessibilityIcon />
           </ListItemIcon>
           <ListItemText primary="Employees" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={(e) => onClickNav(e, '/skills')}>
           <ListItemIcon>
             <AssignmentIcon />
           </ListItemIcon>

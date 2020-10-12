@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '@material-ui/core/Input';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -36,9 +36,15 @@ const MenuProps = {
   },
 };
 
-const skills = ['Building', 'Grout', 'Gardening', 'Electrician', 'Plumbing'];
+const skills = [
+  { id: 1, name: 'Building' },
+  { id: 2, name: 'Electrician' },
+  { id: 3, name: 'Plumbing' },
+  { id: 4, name: 'Gardening' },
+  { id: 5, name: 'Landscaping' },
+];
 
-export default () => {
+export default (props) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
@@ -48,21 +54,34 @@ export default () => {
     setEmployeeSkills(event.target.value);
   };
 
-  const handleChangeMultiple = (event) => {
-    const { options } = event.target;
-    const value = [];
-    for (let i = 0, l = options.length; i < l; i += 1) {
-      if (options[i].selected) {
-        value.push(options[i].value);
-      }
+  useEffect(() => {
+    if (props.selectedUser.id) {
+      const employee = props.selectedUser;
+      setFirstName(employee.firstName);
+      setLastName(employee.lastName);
+      setEmployeeSkills(employee.employeeSkills);
     }
-    setEmployeeSkills(value);
+  }, [props.selectedUser]);
+
+  const submitOnClick = () => {
+    let employeeId = null;
+    if (props.selectedUser.id) {
+      employeeId = props.selectedUser.id;
+    }
+    const employeeToSubmit = {
+      id: employeeId,
+      firstName,
+      lastName,
+      employeeSkills,
+    };
+    props.onSubmit(employeeToSubmit);
+    props.onCancel();
   };
 
   const classes = useStyles();
 
   return (
-    <form>
+    <form onSubmit={props.onSubmit}>
       <FormControl className={classes.margin}>
         <InputLabel htmlFor="standard-adornment-amount">First Name</InputLabel>
         <Input
@@ -90,32 +109,49 @@ export default () => {
           input={<Input id="select-multiple-chip" />}
           renderValue={(selected) => (
             <div className={classes.chips}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} className={classes.chip} />
-              ))}
+              {selected.map((value) => {
+                return (
+                  <Chip
+                    key={value.id}
+                    label={value.name}
+                    className={classes.chip}
+                  />
+                );
+              })}
             </div>
           )}
           MenuProps={MenuProps}
         >
           {skills.map((skill) => (
-            <MenuItem key={skill} value={skill}>
-              {skill}
+            <MenuItem key={skill.id} value={skill}>
+              {skill.name}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
 
       <div style={{ margin: '12px 6px' }}>
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={submitOnClick}>
           Submit
         </Button>
         <Button
           style={{ marginLeft: '6px' }}
           variant="contained"
           color="secondary"
+          onClick={props.onCancel}
         >
           Cancel
         </Button>
+        {props.selectedUser.id ? (
+          <Button
+            style={{ float: 'right' }}
+            variant="outlined"
+            color="secondary"
+            onClick={props.onDelete}
+          >
+            Delete
+          </Button>
+        ) : null}
       </div>
     </form>
   );

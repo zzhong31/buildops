@@ -1,15 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import CardHeader from '@material-ui/core/CardHeader';
 import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 
 import CreateEmployee from './CreateEmployee';
+import EmployeeViewer from './EmployeeViewer';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,26 +31,78 @@ const useStyles = makeStyles((theme) => ({
 
 export default () => {
   const classes = useStyles();
+
+  const [employeeList, setEmployeeList] = useState([]);
+  const [createMode, setCreateMode] = useState(false);
+  const [currentEditingEmployee, setCurrentEditingEmployee] = useState({});
+
+  const onSubmit = (employee) => {
+    let tempEmployeeList = [...employeeList];
+    if (employee.id) {
+      let foundIndex = tempEmployeeList.findIndex(
+        ({ id }) => id === employee.id
+      );
+      tempEmployeeList[foundIndex].firstName = employee.firstName;
+      tempEmployeeList[foundIndex].lastName = employee.lastName;
+      tempEmployeeList[foundIndex].employeeSkills = employee.employeeSkills;
+      setEmployeeList(tempEmployeeList);
+    } else {
+      employee.id = employeeList.length + 1;
+      setEmployeeList([...tempEmployeeList, employee]);
+    }
+  };
+
+  const createEmployeeButton = () => {
+    setCreateMode(!createMode);
+    if (!createMode) {
+      setCurrentEditingEmployee({});
+    }
+  };
+
+  const existingEmployeeSelected = (employee) => {
+    setCurrentEditingEmployee(employee);
+    setCreateMode(true);
+  };
+
+  const deleteEmployee = () => {
+    let tempEmployeeList = [...employeeList];
+    tempEmployeeList.splice(
+      tempEmployeeList.findIndex(({ id }) => id === currentEditingEmployee.id),
+      1
+    );
+    console.log(tempEmployeeList);
+    setEmployeeList(tempEmployeeList);
+    createEmployeeButton();
+  };
+
   return (
     <Card className={classes.root}>
       <CardHeader
         action={
-          <IconButton aria-label="add employee">
+          <IconButton
+            disabled={createMode ? true : false}
+            aria-label="add employee"
+            onClick={createEmployeeButton}
+          >
             <PersonAddIcon />
           </IconButton>
         }
-        title="Employees"
+        title={createMode ? 'Create Employee' : 'Employees'}
       />
       <CardContent>
-        {/*<List component="nav" aria-label="secondary mailbox folders">
-          <ListItem button>
-            <ListItemText primary="Employee 1" />
-          </ListItem>
-          <ListItem button>
-            <ListItemText primary="Employee 2" />
-          </ListItem>
-      </List>*/}
-        <CreateEmployee />
+        {createMode ? (
+          <CreateEmployee
+            onSubmit={onSubmit}
+            onCancel={createEmployeeButton}
+            selectedUser={currentEditingEmployee}
+            onDelete={deleteEmployee}
+          />
+        ) : (
+          <EmployeeViewer
+            employeeList={employeeList}
+            existingEmployeeSelected={existingEmployeeSelected}
+          ></EmployeeViewer>
+        )}
       </CardContent>
     </Card>
   );
