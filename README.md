@@ -40,3 +40,7 @@ Now run:
 And then accept the options.
 
 After it is done, it will give you the address of the deployed app.
+
+Afterwards, to publish new changes, run:
+
+### amplify publish
