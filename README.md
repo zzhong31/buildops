@@ -44,3 +44,11 @@ After it is done, it will give you the address of the deployed app.
 Afterwards, to publish new changes, run:
 
 ### amplify publish
+
+I have noticed that sometimes, it doesn't upload changes. In that case, run this again:
+
+### amplify init
+
+And then
+
+### amplify publish
