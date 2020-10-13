@@ -5,6 +5,8 @@ import CardContent from '@material-ui/core/CardContent';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import CardHeader from '@material-ui/core/CardHeader';
 import IconButton from '@material-ui/core/IconButton';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import CreateEmployee from './CreateEmployee';
 import EmployeeViewer from './EmployeeViewer';
@@ -13,46 +15,46 @@ const useStyles = makeStyles((theme) => ({
   root: {
     marginTop: '72px',
   },
-  media: {
-    height: 0,
-    paddingTop: '56.25%', // 16:9
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
+  spinner: {
+    display: 'flex',
+    justifyContent: 'center',
   },
 }));
+
+const GET_EMPLOYEES = gql`
+  query listEmployees {
+    listEmployees {
+      items {
+        firstname
+        id
+        lastname
+        skills
+      }
+    }
+  }
+`;
+
+const DELETE_EMPLOYEE = gql`
+  mutation createEmployee($deleteemployeeinput: DeleteEmployeeInput!) {
+    deleteEmployee(input: $deleteemployeeinput) {
+      id
+    }
+  }
+`;
 
 export default () => {
   const classes = useStyles();
 
-  const [employeeList, setEmployeeList] = useState([]);
   const [createMode, setCreateMode] = useState(false);
   const [currentEditingEmployee, setCurrentEditingEmployee] = useState({});
 
-  const onSubmit = (employee) => {
-    let tempEmployeeList = [...employeeList];
-    if (employee.id) {
-      let foundIndex = tempEmployeeList.findIndex(
-        ({ id }) => id === employee.id
-      );
-      tempEmployeeList[foundIndex].firstName = employee.firstName;
-      tempEmployeeList[foundIndex].lastName = employee.lastName;
-      tempEmployeeList[foundIndex].employeeSkills = employee.employeeSkills;
-      setEmployeeList(tempEmployeeList);
-    } else {
-      employee.id = employeeList.length + 1;
-      setEmployeeList([...tempEmployeeList, employee]);
-    }
-  };
+  const [operationOccurring, setOperationOccurring] = useState(false);
+
+  const getEmployeesData = useQuery(GET_EMPLOYEES);
+  const [deleteEmployee] = useMutation(DELETE_EMPLOYEE);
 
   const createEmployeeButton = () => {
+    getEmployeesData.refetch();
     setCreateMode(!createMode);
     if (!createMode) {
       setCurrentEditingEmployee({});
@@ -64,15 +66,20 @@ export default () => {
     setCreateMode(true);
   };
 
-  const deleteEmployee = () => {
-    let tempEmployeeList = [...employeeList];
-    tempEmployeeList.splice(
-      tempEmployeeList.findIndex(({ id }) => id === currentEditingEmployee.id),
-      1
-    );
-    console.log(tempEmployeeList);
-    setEmployeeList(tempEmployeeList);
+  const deleteEmployeeButton = async () => {
+    console.log(currentEditingEmployee.id);
+    setOperationOccurring(true);
+
+    await deleteEmployee({
+      variables: {
+        deleteemployeeinput: {
+          id: currentEditingEmployee.id,
+        },
+      },
+    });
     createEmployeeButton();
+    setCurrentEditingEmployee({});
+    setOperationOccurring(false);
   };
 
   return (
@@ -92,16 +99,23 @@ export default () => {
       <CardContent>
         {createMode ? (
           <CreateEmployee
-            onSubmit={onSubmit}
             onCancel={createEmployeeButton}
             selectedUser={currentEditingEmployee}
-            onDelete={deleteEmployee}
+            onDelete={deleteEmployeeButton}
           />
         ) : (
-          <EmployeeViewer
-            employeeList={employeeList}
-            existingEmployeeSelected={existingEmployeeSelected}
-          ></EmployeeViewer>
+          <React.Fragment>
+            {getEmployeesData.loading || operationOccurring ? (
+              <div className={classes.spinner}>
+                <CircularProgress />
+              </div>
+            ) : (
+              <EmployeeViewer
+                employeeList={getEmployeesData.data.listEmployees.items}
+                existingEmployeeSelected={existingEmployeeSelected}
+              ></EmployeeViewer>
+            )}
+          </React.Fragment>
         )}
       </CardContent>
     </Card>

@@ -55,9 +55,6 @@ const useStyles = makeStyles((theme) => ({
   spinner: {
     display: 'flex',
     justifyContent: 'center',
-    '& > * + *': {
-      marginLeft: theme.spacing(2),
-    },
   },
 }));
 

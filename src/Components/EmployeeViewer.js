@@ -21,7 +21,7 @@ export default (props) => {
                 <AccountBoxIcon />
               </ListItemIcon>
               <ListItemText
-                primary={`${employee.firstName} ${employee.lastName}`}
+                primary={`${employee.firstname} ${employee.lastname}`}
               />
             </ListItem>
           ))}
