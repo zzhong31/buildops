@@ -228,7 +228,7 @@ export default (props) => {
 
           <div style={{ margin: '12px 12px' }}>
             <Button variant="contained" color="primary" onClick={submitOnClick}>
-              Submit
+              Save
             </Button>
             <Button
               style={{ marginLeft: '6px' }}

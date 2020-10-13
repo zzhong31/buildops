@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -47,6 +47,7 @@ export default () => {
 
   const [createMode, setCreateMode] = useState(false);
   const [currentEditingEmployee, setCurrentEditingEmployee] = useState({});
+  const [ headerText, setHeaderText] = useState('Create Employee')
 
   const [operationOccurring, setOperationOccurring] = useState(false);
 
@@ -82,6 +83,16 @@ export default () => {
     setOperationOccurring(false);
   };
 
+  
+  useEffect(()=>{
+    if(createMode && currentEditingEmployee.id){
+      setHeaderText('Edit Employee');
+    }
+    else{
+      setHeaderText('Create Employee');
+    }
+  },[currentEditingEmployee,createMode])
+
   return (
     <Card className={classes.root}>
       <CardHeader
@@ -94,7 +105,7 @@ export default () => {
             <PersonAddIcon />
           </IconButton>
         }
-        title={createMode ? 'Create Employee' : 'Employees'}
+        title={createMode ? headerText : 'Employees'}
       />
       <CardContent>
         {createMode ? (
