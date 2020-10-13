@@ -10,7 +10,7 @@ After that, run
 
 From there, you will need to place the aws-exports.js in the /src/ directory. I am not including it in the repository because of the API key.
 
-If you need it, I will provide the file to you.
+If you need it, I will provide the file or the text to you.
 
 Once that is done, run:
 
