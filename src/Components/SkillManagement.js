@@ -15,10 +15,49 @@ import ListItemText from '@material-ui/core/ListItemText';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+//import { createSkill } from '../graphql/mutations'
+
+const ADD_SKILL = gql`
+  mutation createEmployee($createskillinput: CreateSkillInput!) {
+    createSkill(input: $createskillinput) {
+      id
+      name
+    }
+  }
+`;
+
+const GET_SKILLS = gql`
+  query listEmployees {
+    listSkills {
+      items {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const DELETE_SKILL = gql`
+  mutation createEmployee($deleteskillinput: DeleteSkillInput!) {
+    deleteSkill(input: $deleteskillinput) {
+      id
+    }
+  }
+`;
 
 const useStyles = makeStyles((theme) => ({
   root: {
     marginTop: '72px',
+  },
+  spinner: {
+    display: 'flex',
+    justifyContent: 'center',
+    '& > * + *': {
+      marginLeft: theme.spacing(2),
+    },
   },
 }));
 
@@ -26,27 +65,67 @@ export default () => {
   const classes = useStyles();
 
   const [skillInput, setSkillInput] = useState('');
-  const [skillsList, setSkillsList] = useState([]);
 
-  const addOnClick = () => {
-    setSkillsList([
-      ...skillsList,
-      { name: skillInput, id: skillsList.length + 1 },
-    ]);
+  const [addSkill] = useMutation(ADD_SKILL);
+  const [deleteSkill] = useMutation(DELETE_SKILL);
+  const getSkillsData = useQuery(GET_SKILLS);
+
+  const addOnClick = async () => {
+    await addSkill({
+      variables: {
+        createskillinput: {
+          name: skillInput,
+        },
+      },
+    });
     setSkillInput('');
+    getSkillsData.refetch();
   };
 
   const keyPress = (e) => {
     if (e.keyCode === 13) {
       addOnClick();
-      // put the login here
     }
   };
 
-  const deleteSkill = (index) => {
-    let tempSkillList = [...skillsList];
-    tempSkillList.splice(index, 1);
-    setSkillsList(tempSkillList);
+  const deleteSkillButton = async (skill) => {
+    await deleteSkill({
+      variables: {
+        deleteskillinput: {
+          id: skill.id,
+        },
+      },
+    });
+    getSkillsData.refetch();
+  };
+
+  const renderSkillsList = () => {
+    return (
+      <React.Fragment>
+        {getSkillsData.data && getSkillsData.data.listSkills.items.length ? (
+          <List>
+            {getSkillsData.data.listSkills.items.map((skill, index) => (
+              <ListItem key={skill.id}>
+                <ListItemText primary={skill.name} />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => deleteSkillButton(skill)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="h5" component="h2">
+            No Skills Added
+          </Typography>
+        )}
+      </React.Fragment>
+    );
   };
 
   return (
@@ -54,6 +133,11 @@ export default () => {
       <CardHeader title={'Skills'} />
       <CardContent>
         <Grid container justify="center">
+          <Grid item>
+            <IconButton aria-label="add skill" onClick={addOnClick}>
+              <AddIcon />
+            </IconButton>
+          </Grid>
           <Grid item xs={9}>
             <InputLabel htmlFor="standard-adornment-amount">
               Add Skill
@@ -66,36 +150,16 @@ export default () => {
               onKeyDown={keyPress}
             />
           </Grid>
-          <Grid item>
-            <IconButton aria-label="add skill" onClick={addOnClick}>
-              <AddIcon />
-            </IconButton>
-          </Grid>
         </Grid>
         <Divider style={{ margin: '24px' }} variant="middle" />
         <Grid container justify="center">
           <Grid item style={{ marginTop: '16px' }} xs={10}>
-            {skillsList.length ? (
-              <List>
-                {skillsList.map((skill, index) => (
-                  <ListItem key={skill.id}>
-                    <ListItemText primary={skill.name} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => deleteSkill(index)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))}
-              </List>
+            {getSkillsData.loading ? (
+              <div className={classes.spinner}>
+                <CircularProgress />
+              </div>
             ) : (
-              <Typography variant="h5" component="h2">
-                No Skills Added
-              </Typography>
+              renderSkillsList()
             )}
           </Grid>
         </Grid>
