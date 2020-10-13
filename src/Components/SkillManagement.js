@@ -68,6 +68,11 @@ export default () => {
   const getSkillsData = useQuery(GET_SKILLS);
 
   const addOnClick = async () => {
+
+    if(getSkillsData.data.listSkills.items.find(x=> x.name.toLowerCase()===skillInput.toLowerCase())){
+      return window.alert('Skill already exists');
+    }
+
     await addSkill({
       variables: {
         createskillinput: {

@@ -89,9 +89,20 @@ export default (props) => {
       const employee = props.selectedUser;
       setFirstName(employee.firstname);
       setLastName(employee.lastname);
-      setEmployeeSkills(JSON.parse(employee.skills));
+      const parsedSkills = JSON.parse(employee.skills);
+      let validSkills = [];
+      if(getSkillsData.data){
+        for(let i=0; i < parsedSkills.length; i++){
+          if(getSkillsData.data.listSkills.items.find(x=> x.id===parsedSkills[i].id)){
+            validSkills=[...validSkills, parsedSkills[i].id]
+          }
+        }
+      }      
+      setEmployeeSkills(validSkills);
+     
     }
-  }, [props.selectedUser]);
+    
+  }, [getSkillsData.data,props.selectedUser]);
 
   const submitOnClick = async () => {
     if (!firstName || !lastName) {
@@ -100,16 +111,21 @@ export default (props) => {
 
     setSubmitting(true);
     let employeeId = null;
+
+    let employeeSkillsObjects = employeeSkills.map(skill=>{
+      
+      return getSkillsData.data.listSkills.items.find(x=> x.id===skill)
+    })
     if (props.selectedUser.id) {
       employeeId = props.selectedUser.id;
-      console.log('updating');
+
       await updateEmployee({
         variables: {
           updateemployeeinput: {
             id: employeeId,
             firstname: firstName,
             lastname: lastName,
-            skills: JSON.stringify(employeeSkills),
+            skills: JSON.stringify(employeeSkillsObjects),
           },
         },
       });
@@ -120,7 +136,7 @@ export default (props) => {
           createemployeeinput: {
             firstname: firstName,
             lastname: lastName,
-            skills: JSON.stringify(employeeSkills),
+            skills: JSON.stringify(employeeSkillsObjects),
           },
         },
       });
@@ -177,10 +193,14 @@ export default (props) => {
                 renderValue={(selected) => (
                   <div className={classes.chips}>
                     {selected.map((value) => {
+                      let lookupName;
+                      if(getSkillsData.data){
+                        lookupName=getSkillsData.data.listSkills.items.find(x=> x.id===value);
+                      }
                       return (
                         <Chip
-                          key={value.id}
-                          label={value.name}
+                          key={value}
+                          label={lookupName.name}
                           className={classes.chip}
                         />
                       );
@@ -190,7 +210,7 @@ export default (props) => {
                 MenuProps={MenuProps}
               >
                 {getSkillsData.data.listSkills.items.map((skill) => (
-                  <MenuItem key={skill.id} value={skill}>
+                  <MenuItem key={skill.id} value={skill.id}>
                     {skill.name}
                   </MenuItem>
                 ))}

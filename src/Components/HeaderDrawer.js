@@ -42,7 +42,7 @@ export default function TemporaryDrawer() {
   };
 
   const onClickNav = (e, href) => {
-    console.log('nav event');
+    
     if (e.metaKey || e.ctrlKey) {
       return;
     }

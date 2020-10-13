@@ -16,7 +16,7 @@ export default () => {
   const classes = useStyles();
 
   const onClickNav = (e, href) => {
-    console.log('nav event');
+    
     if (e.metaKey || e.ctrlKey) {
       return;
     }
