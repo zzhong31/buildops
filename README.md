@@ -10,7 +10,7 @@ After that, run
 
 From there, you will need to place the aws-exports.js in the /src/ directory. I am not including it in the repository because of the API key.
 
-If you need it, I will provide the file to you.
+If you need it, I will provide the file or the text to you.
 
 Once that is done, run:
 
@@ -40,3 +40,15 @@ Now run:
 And then accept the options.
 
 After it is done, it will give you the address of the deployed app.
+
+Afterwards, to publish new changes, run:
+
+### amplify publish
+
+I have noticed that sometimes, it doesn't upload changes. In that case, run this again:
+
+### amplify init
+
+And then
+
+### amplify publish
