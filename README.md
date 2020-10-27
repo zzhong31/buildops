@@ -1,3 +1,9 @@
+Employee management CRUD app allowing for creation of employees, and skills that are associated with the employees.
+
+[Demo](http://buildops-20201012230055-hostingbucket-dev.s3-website-us-west-2.amazonaws.com/)
+
+
+
 ## To run
 
 Please clone the respository to a directory and then run:
